@@ -6,6 +6,7 @@
 import keras.backend as K
 from keras.layers import Layer
 from keras import initializers, regularizers, constraints
+import numpy as np
 
 def dot_product(x, kernel):
 
