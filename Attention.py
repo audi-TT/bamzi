@@ -72,16 +72,21 @@ class AttentionLayer(Layer):
         if self.attention_type=='global':
             
             #uit = dot_product(x, self.W)
+            #print ('x hsape:' , np.shape(x))
+            #print ('W hsape:' , np.shape(self.W))            
+            #print ('uit hsape:' , np.shape(uit))            
+
             #option 1:
-            tf.keras.backend.reshape(x,(None,100,100))
+            uit= K.reshape(x,(-1,100,100))
+
+            print ('uit shape:' , np.shape(uit))
             #option 2:
+
+
             
             if self.bias:
                 uit += self.b
 
-            print('x shape', np.shape(x))
-            print('W shape', np.shape(self.W)) 
-            print('uit shape', np.shape(uit))
             
             #uit = K.tanh(uit)
             ait = dot_product(uit, self.u) #score(ut,u)
