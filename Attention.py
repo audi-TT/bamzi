@@ -113,25 +113,53 @@ class AttentionLayer(Layer):
     
 #~~~~~~~~~~~Local Attention       
         elif self.attention_type=='local':
-            uit = dot_product(x, self.W)
+            ht = K.reshape(x,(-1,np.shape(x)[-1],np.shape(x)[-1])) 
 
             if self.bias:
-                uit += self.b
+                ht += self.b
 
-            uit = K.tanh(uit)
-            ait = dot_product(uit, self.u)
+            D=3  # local atention window size user defined
+            pt=int(np.shape(x)[-1])*np.identity(np.shape(x)[-1], dtype='float32') #Tx
+            sig=K.sigmoid(K.tanh(ht)) #sigmoid part
+            pt=pt*sig #Tx*sigmoid
 
-            a = K.exp(ait)
+#play goround~~~~~~~~~~~~~~~
+
+            print ('pt shape:' , np.shape(pt))
+            ptt=K.squeeze(pt,axis=0)
+            print ('ptt shape:' , np.shape(ptt))
+            pttt=np.array(ptt)
+
+   
+            #except: 
+            #    print('print row 2 array nashod')
+#            pptt=5
+#            a_local=a[:,pptt-D:pptt+D]
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~            
+            
+            ait = dot_product(ht, self.u)
+
+            ii=np.array(range(np.shape(x)[-1]),dtype='float32')
+            a = K.exp(ait+(-1.0*(ii-pt)**2/(D*D/2.0)))
 
             # apply mask after the exp. will be re-normalized next
             if mask is not None:
                 # Cast the mask to floatX to avoid float64 upcasting in theano
                 a *= K.cast(mask, K.floatx())
 
+##            pptt=5
+##            a_local= K.exp(ait)[:,pptt-D:pptt+D]
+            a_local=K.exp(ait)*ptt
+###            try: a_local=K.exp(ait)*ptt
+###            except: print('ptt nashod')
+
+####            try: a_local=K.exp(ait)*pt
+####            except: print('pt nashod')
+            
             # in some cases especially in the early stages of training the sum may be almost zero
             # and this results in NaN's. A workaround is to add a very small positive number ε to the sum.
             # a /= K.cast(K.sum(a, axis=1, keepdims=True), K.floatx())
-            a /= K.cast(K.sum(a, axis=1, keepdims=True) + K.epsilon(), K.floatx())
+            a /= K.cast(K.sum(a_local, axis=1, keepdims=True) + K.epsilon(), K.floatx())
 
             a = K.expand_dims(a)
             weighted_input = x * a
