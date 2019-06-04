@@ -70,8 +70,12 @@ class AttentionLayer(Layer):
     def call(self, x, mask=None):
 #~~~~~~~~~~~Global Attention 
         if self.attention_type=='global':
-            uit = dot_product(x, self.W)
-
+            
+            #uit = dot_product(x, self.W)
+            #option 1:
+            tf.keras.backend.reshape(x,(None,100,100))
+            #option 2:
+            
             if self.bias:
                 uit += self.b
 
